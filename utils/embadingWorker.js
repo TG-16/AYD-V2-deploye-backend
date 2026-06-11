@@ -17,7 +17,12 @@ const initPipeline = async () => {
     // Using feature-extraction task for creating embedding vectors
     // embeddingPipeline = await pipeline('feature-extraction', 'Xenova/bge-small-en-v1.5');
 
-    embeddingPipeline = initModels.encoder;
+    // 1. Invoke the function with await to get the returned object
+    const models = await initModels(); 
+    
+    // 2. Extract the encoder from that object
+    embeddingPipeline = models.encoder;
+
     console.log('[Worker] ML Model successfully loaded into memory.');
   }
   return embeddingPipeline;
