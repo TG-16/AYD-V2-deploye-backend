@@ -1,0 +1,164 @@
+so my plan is
+
+there will be 4 division
+
+siem, performanc, db health and event log table respectively
+
+and at the top right side a time filter window
+
+value( 4) list (min, hours, day, months) refresh button (relative to now)
+
+date filter in b/n
+
+
+
+in SIEM part 3 things
+
+1, Real-time Threat Feed (Live Data Table):
+
+a 2 columned table severity and  qty
+
+when clicked the event log table will be filed with the log list from the evern_log type with the selected severity type and active time window currently choosen on the top and at the end of each row with block user button w/c will update the status of that user from true to false in the users table
+
+2, Destructive Events Metric Cards (KPI Grid)
+
+a big number that shows how much batch deletion occured
+
+3,Authentication Status Breakdown (Donut Chart)
+
+a donut chart with Displays the ratio of USER_LOGGED_IN vs. LOGIN_FAILURE
+
+when clicked populate the event log table accordingly
+
+
+
+in performance 3 things
+
+1,API Usage Over Time (Stacked Area Chart)
+
+ X-axis is time (hours/days), Y-axis is request counts. Each area represents a different route type (e.g., Green for /api/search/globalSearch, Blue for /api/crud/readData, Orange for creations). 
+
+when the specific chart clicked it populates the event log accordingly
+
+2,Latency Heatmap / Line Graph (Average Query Time
+
+The Chart Type: A Stacked Bar Chart or a 2D grid matrix chart (using shades of color).
+
+X-Axis: Time intervals (e.g., every hour over the last 24 hours).
+
+Y-Axis: Total number of requests.
+
+Color-Coding: * Green: $<50\text{ms}$ (Blazing fast CRUD/Search).
+
+Yellow: $50-200\text{ms}$ (Normal load).
+
+Orange: $200-1000\text{ms}$ (Heavy hybrid or vector search operations).
+
+Red: $>1000\text{ms}$ (Bottlenecks / Cold starts).
+
+Make each colored block in the squares clickable. If you notice a sudden tall spike of Red ($>1000\text{ms}$) at 2:00 PM, clicking that specific red bar should instantly populate a event log table below it showing the exact rows from your event_log table during that hour where duration_ms > 1000
+
+3,Status Code Ratio (Bar Chart): Shows the distribution of 200, 400, 413 (Payload Too Large), and 500 status responses.
+
+clicking the bar populate the event log table below accordingly by filtering by status code
+
+
+
+in database health 4 things
+
+1,Database Capacity Gauge (Radial Progress Bar)
+
+ want a circular progress ring tracking your total database storage volume relative to my tier limits w/c is 500Mb
+
+2,Top Workspace Consumers (Horizontal Bar Chart)
+
+Ranks the top 5 largest workspace databases 
+
+as x axis size in MB
+
+and y axis the name of the workspace
+
+3,circular char active connection
+
+showing the active connections comparing with the limit w/c is 10
+
+and drop ideal connection button when clicked will hit a backend endpoint w/c will drop ideal connections
+
+4,Index Scan vs. Sequential Scan Ratio
+
+The Chart Type: A Grouped Horizontal Bar Chart or a Donut Chart with a side-by-side table.
+
+X-Axis: Count of scans.
+
+Y-Axis: Table names (e.g., your core system tables or specific large tenant tables).
+
+The Breakdown: For each table, show two bars side by side: a Blue bar for idx_scan and a Grey/Warning Orange bar for seq_scan.
+
+when the specifid table bar clicked populate the event log table by filtering metatdat table name accordingly 
+
+
+
+
+
+NOTE: 
+
+the event log table at the bottom is has all the columns from the evetn_log table database with one extra action column and dynamically populated based on the admin interaction with the above lists, and at first it will populte based on the active time window
+
+and i am using react and pure Css as a styling
+
+
+
+
+
+this is my current event_log table schema in my db
+
+CREATE TABLE event_log (
+
+    -- Unique internal identifier using native Postgres UUID v4 generation
+
+    event_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+
+    
+
+    -- Tenant & Identity tracking (can be NULL if authentication or context fails)
+
+    workspace_id UUID NULL,
+
+    user_id UUID NULL,                      -- Adjusted to INT matching standard serial or identity IDs
+
+    
+
+    -- Metric classification vectors
+
+    event_type VARCHAR(100) NOT NULL,
+
+    endpoint VARCHAR(255) NOT NULL,
+
+    status_code SMALLINT NOT NULL,         -- SMALLINT saves storage overhead over INT for 3-digit status codes
+
+    duration_ms NUMERIC(10, 2) NOT NULL,   -- Supports precise decimals (e.g., 142.55ms)
+
+    
+
+    -- Rich payload audit store (Index metadata variables easily)
+
+    meta_data JSONB NOT NULL DEFAULT '{}'::jsonb,
+
+    
+
+    -- Network tracking and timeline records
+
+    ip_address VARCHAR(45) NULL,           -- Length 45 comfortably accommodates IPv4 and long IPv6 strings
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+
+);
+
+where in metadata there might and will be datas 
+
+table nam, request method, severity, and row count
+
+
+
+based on these informations i want you to make me a brief greate admin front end using the reach and css 
+

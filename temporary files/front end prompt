@@ -1,0 +1,630 @@
+# FRONTEND IMPLEMENTATION SPECIFICATION
+
+You are a senior frontend architect and SaaS product designer.
+
+Your task is to build a complete production-ready React frontend for my project called:
+
+AYD (Ask Your Database)
+
+This is a DaaS (Database as a Service) platform centered around Hybrid Search.
+
+You will receive the complete backend source code.
+
+IMPORTANT RULES:
+
+1. Create a new folder named FRONTEND.
+2. Work ONLY inside the FRONTEND folder.
+3. Do NOT modify, rename, delete, or refactor any backend files.
+4. You must inspect the backend code and derive request/response structures directly from the implementation.
+5. Use the existing backend API endpoints exactly as implemented.
+6. If endpoint payload structures are unclear, infer them from the backend code.
+7. Build the frontend to match the backend, not vice versa.
+
+---
+
+# TECHNOLOGY REQUIREMENTS
+
+Use:
+
+* React
+* React Router
+* Pure CSS (NO Tailwind)
+* Context API or Zustand for state management
+* Fetch API or Axios
+* Responsive Design
+* Accessibility best practices
+
+DO NOT USE:
+
+* Tailwind CSS
+* Bootstrap
+* Material UI
+* Ant Design
+* Chakra UI
+* shadcn/ui
+
+Create custom reusable components and custom CSS.
+
+---
+
+# DESIGN REQUIREMENTS
+
+The UI must look like a modern premium SaaS product.
+
+Inspiration:
+
+* Stripe
+* Supabase
+* Vercel
+* Neon
+* Algolia
+
+Requirements:
+
+* Clean typography
+* Consistent spacing
+* Smooth hover effects
+* Modern cards
+* Professional dashboard
+* Empty states
+* Loading states
+* Error states
+* Responsive layouts
+* Mobile support
+* Tablet support
+* Desktop support
+
+Use a dark theme with premium SaaS aesthetics.
+
+---
+
+# APPLICATION STRUCTURE
+
+Public Area
+
+* Landing Page
+* Login
+* Register
+* OAuth Login
+* Pricing
+* Documentation
+
+Authenticated Area
+
+* Dashboard
+* Workspaces
+* Tables
+* Insert Data
+* Read Data
+* Global Search
+* API Keys
+* Settings
+* Upgrade
+
+---
+
+# LANDING PAGE
+
+Sections:
+
+1. Hero Section
+
+* AYD branding
+* Clear value proposition
+* CTA button
+
+2. Features Section
+
+Explain:
+
+* Hybrid Search
+* Database as a Service
+* Fast API Integration
+* Workspace Isolation
+* Secure Access
+
+3. Documentation Section
+
+Create a developer-friendly API documentation preview.
+
+For every backend endpoint:
+
+* description
+* request example
+* response example
+* copy code button
+
+Generate code examples in:
+
+* JavaScript
+* Python
+* cURL
+
+4. Pricing
+
+Free
+
+* 1 workspace
+* limited requests
+
+Pro
+
+* more workspaces
+* higher limits
+
+Business
+
+* enterprise limits
+
+5. Footer
+
+---
+
+# AUTHENTICATION
+
+Support:
+
+* Email Registration
+* Email Login
+* Google OAuth
+
+Create UI only if backend implementation is incomplete.
+
+---
+
+# SIDEBAR NAVIGATION
+
+Default Sidebar:
+
+* Dashboard
+* Workspaces
+* Create API Key
+* Settings
+* Upgrade
+
+Global Search should only appear after a workspace is selected.
+
+After a workspace becomes active:
+
+* Global Search
+* Tables
+* Insert Data
+* Read Data
+
+must appear.
+
+Persist selected workspace globally.
+
+---
+
+# GLOBAL STATE
+
+Create centralized state for:
+
+* User
+* Authentication
+* Current Workspace
+* Active Table
+* Dashboard Stats
+* API Keys
+
+Active Table must persist while navigating between:
+
+* Tables
+* Insert Data
+* Read Data
+
+Only the content panel should change.
+
+---
+
+# DASHBOARD
+
+Endpoint:
+
+/api/app/dashboard
+
+Top Statistics Row:
+
+1. Space Used
+
+Display as gauge/speedometer style meter.
+
+2. Workspace Usage
+
+Example:
+
+2 / 5
+
+3. API Keys Created
+
+Display total count.
+
+4. Requests Used
+
+Example:
+
+100 / 10,000
+
+Display vertical progress indicator:
+
+* green = low usage
+* yellow = medium
+* red = high
+
+Second Section:
+
+Workspace List
+
+Endpoint:
+
+/api/app/workspaces
+
+Each workspace card shows:
+
+* Workspace Name
+* Workspace ID
+* Manage Button
+
+Manage:
+
+* Select workspace
+* Load tables
+* Navigate to tables screen
+
+If user has zero workspaces:
+
+Display large CTA:
+
+Create Workspace
+
+---
+
+# TABLES PAGE
+
+Endpoint:
+
+/api/app/tables
+
+Two-column layout.
+
+LEFT COLUMN
+
+* Create Table Form
+* Existing Tables List
+
+Create Table:
+
+Endpoint:
+
+/api/crud/createTable
+
+After selecting a table:
+
+Show schema editor.
+
+Display:
+
+* column name
+* datatype
+* constraints
+
+Supported constraints:
+
+* unique
+* not null
+
+Add Column Button
+
+Apply Schema Button
+
+IMPORTANT:
+
+When Apply Schema is clicked:
+
+Only newly added columns must be sent to:
+
+/api/crud/addColumn
+
+Never resend existing columns.
+
+---
+
+# ACTIVE TABLE SYSTEM
+
+When a table is selected:
+
+Store active table globally.
+
+The active table drives:
+
+* Tables
+* Insert Data
+* Read Data
+
+without reselecting.
+
+---
+
+# INSERT DATA PAGE
+
+Endpoint:
+
+/api/crud/insertData
+
+Right panel changes into JSON editor.
+
+Requirements:
+
+* syntax highlighting if possible
+* validation
+* formatting button
+* submit button
+
+Display success/error feedback.
+
+---
+
+# READ DATA PAGE
+
+Endpoint:
+
+/api/crud/readData
+
+Display records dynamically.
+
+Do not assume schema.
+
+Generate table columns dynamically.
+
+Above results create Filter Builder.
+
+Inspect backend filterBuilder.js and implement all supported filters.
+
+For text columns:
+
+* equals
+* contains
+* starts with
+* ends with
+* etc.
+
+For numeric/date columns:
+
+Generate appropriate operators.
+
+Display:
+
+* filter controls
+* fetch button
+
+---
+
+
+# GLOBAL SEARCH PAGE
+
+Endpoint:
+
+/api/search/globalSearch
+
+This is the flagship feature of AYD and should be treated as the primary product experience.
+
+The design quality of this page should exceed the rest of the application.
+
+## Search Interface
+
+At the top:
+
+* Large search input
+* Search button
+* Enter key triggers search
+
+Below the search box:
+
+### Text Filter
+
+One general text filter section:
+
+* text input
+* operator dropdown
+
+Only send to backend when populated.
+
+### Numeric and Date Filters
+
+IMPORTANT:
+
+The frontend must inspect the schema of ALL tables inside the currently selected workspace.
+
+Only columns with datatype:
+
+* number
+* integer
+* float
+* decimal
+* date
+* datetime
+* timestamp
+
+should generate advanced filters.
+
+Do NOT generate filters for string/text columns beyond the main text filter.
+
+For every numeric/date column discovered:
+
+Display:
+
+* Table Name
+* Column Name
+* Operator Dropdown
+* Value Input
+
+Examples:
+
+Orders.createdAt
+[After ▼]
+[2025-01-01]
+
+Products.price
+[Greater Than ▼]
+[100]
+
+Customer.age
+[Between ▼]
+[18 - 65]
+
+All filter fields are optional.
+
+Only populated filters should be included in the request payload.
+
+## Search Results
+
+IMPORTANT:
+
+Do NOT group results by table.
+
+The backend returns relevance-ranked hybrid search results.
+
+The frontend must preserve backend ranking order exactly as received.
+
+Results should be displayed as a ranked list.
+
+Each result card should contain:
+
+* Relevance Score
+* Matching Fields
+* Highlighted Matching Values
+
+The relevance score should be visually emphasized.
+
+Example:
+
+Score: 97.8
+
+Matched Fields:
+
+* name
+* description
+
+Record Data:
+{ ... }
+
+Results must remain sorted by score descending.
+
+Never reorder results on the frontend.
+
+## UX Requirements
+
+Loading State
+
+* skeleton loaders
+* animated search progress
+
+No Results State
+
+* professional empty state
+* suggestions for refining search
+
+Error State
+
+* retry button
+
+## Performance
+
+Debounce filter updates.
+
+Only trigger search when:
+
+* Search button clicked
+* Enter key pressed
+
+Do not automatically search while typing.
+
+
+# API KEYS PAGE
+
+Display:
+
+* API Key Name Input
+* Create API Key Button
+
+Display created API keys in a table.
+
+IMPORTANT:
+
+After successful creation:
+
+Show generated API key only once.
+
+Create secure modal containing:
+
+* API key
+* copy button
+* warning message
+
+---
+
+# SETTINGS PAGE
+
+Sections:
+
+1. Profile
+
+Editable:
+
+* username
+* email
+
+2. Change Password
+
+Create full UI.
+
+3. Upgrade Plan
+
+Create UI.
+
+4. Invoice History
+
+Placeholder UI.
+
+No backend implementation required.
+
+---
+
+# UPGRADE PAGE
+
+Create premium SaaS pricing upgrade experience.
+
+Include:
+
+* plan comparison
+* feature matrix
+* CTA buttons
+
+No backend implementation required.
+
+---
+
+# REQUIRED OUTPUT
+
+Return complete code.
+
+Generate:
+
+* folder structure
+* all React components
+* pages
+* routes
+* state management
+* API service layer
+* reusable UI components
+* CSS files
+* loading states
+* empty states
+* error states
+
+Do not return pseudocode.
+
+Generate production-quality implementation.
+
+Whenever possible, inspect backend code and derive actual request and response models automatically.
