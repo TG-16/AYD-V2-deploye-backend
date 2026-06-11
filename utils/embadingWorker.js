@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const { pipeline } = require('@huggingface/transformers');
+const { initModels } = require("../controllers/search.controller");
 
 const BATCH_SIZE = 100;
 const PROCESSING_INTERVAL_MS = 1000;
@@ -12,9 +13,11 @@ let embeddingPipeline = null;
  */
 const initPipeline = async () => {
   if (!embeddingPipeline) {
-    console.log('[Worker] Loading ML Model (Xenova/bge-small-en-v1.5)...');
+    console.log('[Worker] Loading Xenova/all-MiniLM-L6-v2 (Quantized)...');
     // Using feature-extraction task for creating embedding vectors
-    embeddingPipeline = await pipeline('feature-extraction', 'Xenova/bge-small-en-v1.5');
+    // embeddingPipeline = await pipeline('feature-extraction', 'Xenova/bge-small-en-v1.5');
+
+    embeddingPipeline = initModels.encoder;
     console.log('[Worker] ML Model successfully loaded into memory.');
   }
   return embeddingPipeline;

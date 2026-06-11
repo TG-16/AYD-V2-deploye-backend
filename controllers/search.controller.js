@@ -1,8 +1,6 @@
-const { executeHybridQuery } = require('../models/search.model');
-const FilterBuilder = require('../utils/FilterBuilder');
-const { pipeline } = require('@huggingface/transformers');
-const path = require('path'); // should be removed
-
+const { executeHybridQuery } = require("../models/search.model");
+const FilterBuilder = require("../utils/FilterBuilder");
+const { pipeline } = require("@huggingface/transformers");
 
 // Change these to hold the initialization Promise instead of the raw pipeline
 let modelsPromise = null;
@@ -11,18 +9,34 @@ const initModels = async () => {
   // If an initialization is already in progress or completed, return that same promise
   if (!modelsPromise) {
     modelsPromise = (async () => {
-      console.log('[Search Engine] Initializing Neural Infrastructure layers...');
-      
-      console.log('[Search Engine] Loading Xenova/bge-small-en-v1.5...');
-      const encoder = await pipeline('feature-extraction', 'Xenova/bge-small-en-v1.5');
-      
-      console.log('[Search Engine] Loading Xenova/bge-reranker-base...');
-      const reranker = await pipeline('text-classification', 'Xenova/bge-reranker-base');
-      
+      // 1. Load the ultra-lightweight Encoder (Uses ~30MB RAM)
+      console.log(
+        "[Search Engine] Loading Xenova/all-MiniLM-L6-v2 (Quantized)...",
+      );
+      const encoder = await pipeline(
+        "feature-extraction",
+        "Xenova/all-MiniLM-L6-v2",
+        {
+          quantized: true,
+          dtype: "q8", // Forces 8-bit quantization for minimal RAM usage
+        },
+      );
+
+      // 2. Load the lightweight Reranker (Uses ~60MB RAM)
+      console.log("[Search Engine] Loading Xenova/ms-marco-MiniLM-L-6-v2...");
+      const reranker = await pipeline(
+        "text-classification",
+        "Xenova/ms-marco-MiniLM-L-6-v2",
+        {
+          quantized: true,
+          dtype: "q8",
+        },
+      );
+
       return { encoder, reranker };
     })();
   }
-  
+
   return modelsPromise;
 };
 
@@ -32,12 +46,13 @@ const initModels = async () => {
 const globalSearch = async (req, res) => {
   const { query, workspaceId, filters, limit } = req.body;
   const clientLimit = parseInt(limit, 10) || 10;
-  const candidateLimit = 100; 
+  const candidateLimit = 100;
 
   if (!workspaceId || !query) {
-    return res.status(400).json({ 
-      status: false, 
-      message: "Required parameters missing: 'workspaceId' and 'query' string are mandatory inputs." 
+    return res.status(400).json({
+      status: false,
+      message:
+        "Required parameters missing: 'workspaceId' and 'query' string are mandatory inputs.",
     });
   }
 
@@ -46,8 +61,11 @@ const globalSearch = async (req, res) => {
     const { encoder, reranker } = await initModels();
 
     // 1. Generate query vector using BAAI bge-small-en-v1.5 (matches your worker space)
-    const cleanQuery = query.trim() || ' ';
-    const embeddingOutput = await encoder(cleanQuery, { pooling: 'mean', normalize: true });
+    const cleanQuery = query.trim() || " ";
+    const embeddingOutput = await encoder(cleanQuery, {
+      pooling: "mean",
+      normalize: true,
+    });
     const queryVector = Array.from(embeddingOutput.data);
 
     // 2. Map query expressions to your dynamic FilterBuilder module (Offsets start at $4)
@@ -60,7 +78,7 @@ const globalSearch = async (req, res) => {
       vectorQueryString: JSON.stringify(queryVector),
       filterSql: filterData.sql,
       filterValues: filterData.values,
-      candidateLimit
+      candidateLimit,
     });
 
     if (databaseCandidates.length === 0) {
@@ -68,17 +86,24 @@ const globalSearch = async (req, res) => {
     }
 
     // 4. Dynamic Mapping Layer for Cross-Encoder Input Context
-    const rerankerInputs = databaseCandidates.map(row => {
+    const rerankerInputs = databaseCandidates.map((row) => {
       const meta = row.metadata || {};
-      
+
       // Automatically serialize all primary metadata fields into a key-value format
       const dynamicMetaString = Object.entries(meta)
-        .filter(([_, value]) => typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
+        .filter(
+          ([_, value]) =>
+            typeof value === "string" ||
+            typeof value === "number" ||
+            typeof value === "boolean",
+        )
         .map(([key, value]) => `${key}: ${value}`)
-        .join(' | ');
+        .join(" | ");
 
-      const contextString = `Metadata Context: ${dynamicMetaString} | Text Context: ${row.searchable_text || ''}`;
-      
+      const contextString = `Metadata Context: ${dynamicMetaString} | Text Context: ${
+        row.searchable_text || ""
+      }`;
+
       return { text: query, text_pair: contextString };
     });
 
@@ -90,13 +115,13 @@ const globalSearch = async (req, res) => {
       const crossEncoderScore = rerankOutputs[idx].score;
       const normalizedRrf = row.rrf_score / 0.05; // Feature scale normalization
 
-      const finalBlendedScore = (0.3 * normalizedRrf) + (0.7 * crossEncoderScore);
+      const finalBlendedScore = 0.3 * normalizedRrf + 0.7 * crossEncoderScore;
 
       return {
         source_table: row.source_table,
         source_row_id: row.source_row_id,
         metadata: row.metadata,
-        score: finalBlendedScore
+        score: finalBlendedScore,
       };
     });
 
@@ -108,14 +133,14 @@ const globalSearch = async (req, res) => {
     return res.status(200).json({
       status: true,
       resultsCount: finalResults.length,
-      data: finalResults
+      data: finalResults,
     });
-
   } catch (error) {
     console.error("[Global Search Controller Error]:", error);
     return res.status(500).json({
       status: false,
-      message: "An internal server error occurred while executing the search pipeline."
+      message:
+        "An internal server error occurred while executing the search pipeline.",
     });
   }
 };
