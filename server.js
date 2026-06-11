@@ -60,16 +60,16 @@ app.listen(port, () => {
   console.log(`[Production Host Cluster Active] Listening on port: ${port}`);
 
 
-  // initModels()
-  // .then(() => {
-  //   console.log("[System] All BAAI Models successfully loaded into RAM.");
+  initModels()
+  .then(() => {
+    console.log("[System] All BAAI Models successfully loaded into RAM.");
 
-  // })
-  // .catch((err) => {
-  //   console.error(
-  //     "CRITICAL: Search infrastructure initialization failed:",
-  //     err,
-  //   );
-  //   process.exit(1); // Crash early if models can't load
-  // });
+  })
+  .catch((err) => {
+    console.error(
+      "CRITICAL: Search infrastructure initialization failed:",
+      err,
+    );
+    process.exit(1); // Crash early if models can't load
+  });
 });
