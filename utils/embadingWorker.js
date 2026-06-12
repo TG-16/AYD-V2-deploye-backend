@@ -49,11 +49,11 @@ const generateLiveEmbedding384 = async (text) => {
 };
 
 const processPendingEmbeddings = async () => {
-  
+  let client;
   
   try {
 
-    const client = await db.connect();
+    client = await db.connect();
     // 1. Discover all active workspace registry tables
     const discoveryQuery = `
       SELECT table_name 
